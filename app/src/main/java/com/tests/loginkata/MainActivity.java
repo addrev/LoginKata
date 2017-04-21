@@ -2,16 +2,14 @@ package com.tests.loginkata;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.tests.loginkata.SessionApiClient.LoginCallback;
-import com.tests.loginkata.SessionApiClient.LogoutCallback;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LogInView{
 
     public static final String USER_LOGGED = "user_logged";
     EditText inputUsername, inputPassword;
@@ -20,11 +18,20 @@ public class MainActivity extends AppCompatActivity {
     boolean isLoggedIn = false;
     SharedPreferences sharedPreferences;
     View progressBar;
+    private LoginPresenter presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        sharedPreferences = getSharedPreferences("login_data", MODE_PRIVATE);
         setContentView(R.layout.activity_main);
+        initVIew();
+        presenter=new LoginPresenter(new SessionApiClient(new TimeProvider(), new ThreadExecutor(), new MainThreadExecutor()), new SharedPreferencesSessionStorage(PreferenceManager.getDefaultSharedPreferences(this)));
+        presenter.injectView(this);
+        presenter.initialize();
+    }
+
+    private void initVIew() {
         inputUsername = (EditText) findViewById(R.id.edit_username);
         inputPassword = (EditText) findViewById(R.id.edit_password);
         buttonLogin = findViewById(R.id.button_login);
@@ -32,24 +39,9 @@ public class MainActivity extends AppCompatActivity {
         buttonLogin.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                String email = inputUsername.getText().toString();
-                String password = inputPassword.getText().toString();
-                setLoading(true);
-                sessionApiClient.login(email, password, new LoginCallback() {
-                    @Override
-                    public void onSuccess() {
-                        updateLoginStatus(true);
-                        setLoading(false);
-                    }
-
-                    @Override
-                    public void onError() {
-                        updateLoginStatus(false);
-                        Toast.makeText(getApplicationContext(), "Login failed!! Check your data", Toast.LENGTH_SHORT).show();
-                        setLoading(false);
-
-                    }
-                });
+                String email= getInputEmail();
+                String password= getInputPassword();
+                presenter.onLoginButtonClicked(email,password);
 
 
             }
@@ -57,72 +49,86 @@ public class MainActivity extends AppCompatActivity {
         buttonLogout.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                setLoading(true);
-
-                sessionApiClient.logout(new LogoutCallback() {
-                    @Override
-                    public void onSuccess() {
-                        inputPassword.setText(null);
-                        inputUsername.setText(null);
-                        updateLoginStatus(false);
-                        setLoading(false);
-                    }
-
-                    @Override
-                    public void onError() {
-                        updateLoginStatus(true);
-                        setLoading(false);
-                    }
-                });
+                presenter.onLogoutButtonClicked();
             }
         });
         progressBar = findViewById(R.id.progressBar);
-        sharedPreferences = getSharedPreferences("login_data", MODE_PRIVATE);
-        updateButtons();
-        setLoading(false);
-        isLoggedIn = sharedPreferences.getBoolean(USER_LOGGED, false);
     }
 
-    private void setLoading(boolean loading) {
-        if (loading) {
-            progressBar.setVisibility(View.VISIBLE);
-            buttonLogin.setClickable(false);
-            buttonLogout.setClickable(false);
-        } else {
-            progressBar.setVisibility(View.GONE);
-            buttonLogin.setClickable(true);
-            buttonLogout.setClickable(true);
 
-        }
-    }
+    @Override
+    public void hideLogInForm() {
+        inputUsername.setVisibility(View.GONE);
+        inputPassword.setVisibility(View.GONE);
+        buttonLogin.setVisibility(View.GONE);
 
-    private void updateLoginStatus(boolean isLogged) {
-        isLoggedIn = isLogged;
-        sharedPreferences.edit().putBoolean(USER_LOGGED, isLogged).apply();
-        updateButtons();
-    }
-
-    private void updateButtons() {
-        if (isLoggedIn) {
-            inputUsername.setVisibility(View.GONE);
-            inputPassword.setVisibility(View.GONE);
-            buttonLogin.setVisibility(View.GONE);
-            buttonLogout.setVisibility(View.VISIBLE);
-        } else {
-            inputUsername.setVisibility(View.VISIBLE);
-            inputPassword.setVisibility(View.VISIBLE);
-            buttonLogin.setVisibility(View.VISIBLE);
-            buttonLogout.setVisibility(View.GONE);
-        }
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    public void showLogInForm() {
+        inputUsername.setVisibility(View.VISIBLE);
+        inputPassword.setVisibility(View.VISIBLE);
+        buttonLogin.setVisibility(View.VISIBLE);
+
+    }
+
+
+    @Override
+    public void hideLogOutButton() {
+        buttonLogout.setVisibility(View.GONE);
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    public void showLogOutButton() {
+        buttonLogout.setVisibility(View.VISIBLE);
+
+    }
+
+    @Override
+    public void showError(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showLoading() {
+        progressBar.setVisibility(View.VISIBLE);
+
+    }
+
+    @Override
+    public void hideLoading() {
+        progressBar.setVisibility(View.GONE);
+
+    }
+
+    @Override
+    public void enableButtons() {
+        buttonLogin.setClickable(true);
+        buttonLogout.setClickable(true);
+    }
+
+    @Override
+    public void disableButtons() {
+        buttonLogin.setClickable(false);
+        buttonLogout.setClickable(false);
+
+    }
+
+    public String getInputEmail() {
+        return inputUsername.getText().toString();
+    }
+
+    public String getInputPassword() {
+        return inputPassword.getText().toString();
+    }
+
+    @Override
+    public void emptyInputUsername() {
+        inputUsername.setText(null);
+    }
+
+    @Override
+    public void emptyInputPassword() {
+        inputPassword.setText(null);
     }
 }
