@@ -6,4 +6,13 @@ public class ThreadExecutor implements SessionApiClient.Executor {
     public void post(Runnable run) {
         new Thread(run).start();
     }
+
+    @Override
+    public void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ignore) {
+
+        }
+    }
 }

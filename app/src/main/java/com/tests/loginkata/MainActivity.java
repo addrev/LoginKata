@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String USER_LOGGED = "user_logged";
     EditText inputUsername,inputPassword;
     View buttonLogin,buttonLogout;
-    SessionApiClient sessionApiClient= new SessionApiClient();
+    SessionApiClient sessionApiClient= new SessionApiClient(new TimeProvider(),new ThreadExecutor(),new MainThreadExecutor());
     boolean isLoggedIn =false;
     SharedPreferences sharedPreferences;
     View progressBar;

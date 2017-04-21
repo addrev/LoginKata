@@ -11,4 +11,13 @@ public class MainThreadExecutor implements SessionApiClient.Executor {
     public void post(Runnable runnable) {
         mainThreadHandler.post(runnable);
     }
+
+    @Override
+    public void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ignore) {
+
+        }
+    }
 }

@@ -6,4 +6,9 @@ public class FakeExecutor implements SessionApiClient.Executor {
     public void post(Runnable runnable) {
         runnable.run();
     }
+
+    @Override
+    public void sleep(long millis) {
+
+    }
 }

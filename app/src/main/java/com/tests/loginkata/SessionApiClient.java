@@ -1,11 +1,14 @@
 package com.tests.loginkata;
 
 
+import android.os.SystemClock;
+
 public class SessionApiClient {
 
 
     public interface Executor {
         void post(Runnable run);
+        void sleep(long millis);
     }
 
     public static final String VALID_USERNAME = "jaimegmail.com";
@@ -22,20 +25,12 @@ public class SessionApiClient {
         this.callbackExecutor=callbackExecutor;
     }
 
-    public SessionApiClient() {
-        this(new TimeProvider(),new ThreadExecutor(),new MainThreadExecutor());
-    }
-
 
     void login(final String email, final String password, final LoginCallback completionLoginCallback) {
         backgroundExecutor.post(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                backgroundExecutor.sleep(1000);
                 if (email == null || password == null) {
                     postToMainThread(new Runnable() {
                         @Override
@@ -45,7 +40,7 @@ public class SessionApiClient {
                     });
                     return;
                 }
-                boolean validLoginData = VALID_USERNAME.equalsIgnoreCase(email) || VALID_PASSWORD.equals(password);
+                boolean validLoginData = VALID_USERNAME.equalsIgnoreCase(email) && VALID_PASSWORD.equals(password);
                 if (validLoginData) {
                     postToMainThread(new Runnable() {
                         @Override
@@ -73,11 +68,7 @@ public class SessionApiClient {
         backgroundExecutor.post(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                backgroundExecutor.sleep(1000);
                 boolean validTime = timeProvider.getCurrentTimeSeconds() % 2 == 0;
                 if (validTime) {
                     postToMainThread(new Runnable() {
