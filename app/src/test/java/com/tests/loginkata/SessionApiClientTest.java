@@ -14,6 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class SessionApiClientTest {
@@ -102,6 +103,6 @@ public class SessionApiClientTest {
         sessionApiClient.logout(mockCompletionLoginCallback);
 
         verify(mockCompletionLoginCallback).onSuccess();
-        verify(mockCompletionLoginCallback,never()).onError();
+        verifyNoMoreInteractions(mockCompletionLoginCallback);
     }
 }

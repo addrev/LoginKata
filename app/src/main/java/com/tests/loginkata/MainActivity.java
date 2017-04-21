@@ -1,8 +1,8 @@
 package com.tests.loginkata;
 
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
@@ -14,10 +14,10 @@ import com.tests.loginkata.SessionApiClient.LogoutCallback;
 public class MainActivity extends AppCompatActivity {
 
     public static final String USER_LOGGED = "user_logged";
-    EditText inputUsername,inputPassword;
-    View buttonLogin,buttonLogout;
-    SessionApiClient sessionApiClient= new SessionApiClient(new TimeProvider(),new ThreadExecutor(),new MainThreadExecutor());
-    boolean isLoggedIn =false;
+    EditText inputUsername, inputPassword;
+    View buttonLogin, buttonLogout;
+    SessionApiClient sessionApiClient = new SessionApiClient(new TimeProvider(), new ThreadExecutor(), new MainThreadExecutor());
+    boolean isLoggedIn = false;
     SharedPreferences sharedPreferences;
     View progressBar;
 
@@ -25,14 +25,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        inputUsername= (EditText) findViewById(R.id.edit_username);
-        inputPassword= (EditText) findViewById(R.id.edit_password);
-        buttonLogin=findViewById(R.id.button_login);
-        buttonLogout=findViewById(R.id.button_logout);
+        inputUsername = (EditText) findViewById(R.id.edit_username);
+        inputPassword = (EditText) findViewById(R.id.edit_password);
+        buttonLogin = findViewById(R.id.button_login);
+        buttonLogout = findViewById(R.id.button_logout);
         buttonLogin.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                String email= inputUsername.getText().toString();
+                String email = inputUsername.getText().toString();
                 String password = inputPassword.getText().toString();
                 setLoading(true);
                 sessionApiClient.login(email, password, new LoginCallback() {
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onError() {
                         updateLoginStatus(false);
-                        Toast.makeText(getApplicationContext(),"Login failed!! Check your data",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Login failed!! Check your data", Toast.LENGTH_SHORT).show();
                         setLoading(false);
 
                     }
@@ -60,35 +60,35 @@ public class MainActivity extends AppCompatActivity {
                 setLoading(true);
 
                 sessionApiClient.logout(new LogoutCallback() {
-                        @Override
-                        public void onSuccess() {
-                            inputPassword.setText(null);
-                            inputUsername.setText(null);
-                            updateLoginStatus(false);
-                            setLoading(false);
-                        }
+                    @Override
+                    public void onSuccess() {
+                        inputPassword.setText(null);
+                        inputUsername.setText(null);
+                        updateLoginStatus(false);
+                        setLoading(false);
+                    }
 
-                        @Override
-                        public void onError() {
-                            updateLoginStatus(true);
-                            setLoading(false);
-                        }
-                    });
+                    @Override
+                    public void onError() {
+                        updateLoginStatus(true);
+                        setLoading(false);
+                    }
+                });
             }
         });
         progressBar = findViewById(R.id.progressBar);
-        sharedPreferences= getSharedPreferences("login_data",MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences("login_data", MODE_PRIVATE);
         updateButtons();
         setLoading(false);
-        isLoggedIn=sharedPreferences.getBoolean(USER_LOGGED,false);
+        isLoggedIn = sharedPreferences.getBoolean(USER_LOGGED, false);
     }
 
-    private void setLoading(boolean loading){
-        if(loading){
+    private void setLoading(boolean loading) {
+        if (loading) {
             progressBar.setVisibility(View.VISIBLE);
             buttonLogin.setClickable(false);
             buttonLogout.setClickable(false);
-        }else {
+        } else {
             progressBar.setVisibility(View.GONE);
             buttonLogin.setClickable(true);
             buttonLogout.setClickable(true);
@@ -97,18 +97,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateLoginStatus(boolean isLogged) {
-        isLoggedIn=isLogged;
-        sharedPreferences.edit().putBoolean(USER_LOGGED,isLogged).apply();
+        isLoggedIn = isLogged;
+        sharedPreferences.edit().putBoolean(USER_LOGGED, isLogged).apply();
         updateButtons();
     }
 
     private void updateButtons() {
-        if(isLoggedIn){
+        if (isLoggedIn) {
             inputUsername.setVisibility(View.GONE);
             inputPassword.setVisibility(View.GONE);
             buttonLogin.setVisibility(View.GONE);
             buttonLogout.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             inputUsername.setVisibility(View.VISIBLE);
             inputPassword.setVisibility(View.VISIBLE);
             buttonLogin.setVisibility(View.VISIBLE);
