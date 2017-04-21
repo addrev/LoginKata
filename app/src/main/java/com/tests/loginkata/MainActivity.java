@@ -1,7 +1,6 @@
 package com.tests.loginkata;
 
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -20,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     SessionApiClient sessionApiClient= new SessionApiClient();
     boolean isLoggedIn =false;
     SharedPreferences sharedPreferences;
+    View progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,16 +34,20 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String email= inputUsername.getText().toString();
                 String password = inputPassword.getText().toString();
+                setLoading(true);
                 sessionApiClient.login(email, password, new LoginCallback() {
                     @Override
                     public void onSuccess() {
                         updateLoginStatus(true);
+                        setLoading(false);
                     }
 
                     @Override
                     public void onError() {
                         updateLoginStatus(false);
                         Toast.makeText(getApplicationContext(),"Login failed!! Check your data",Toast.LENGTH_SHORT).show();
+                        setLoading(false);
+
                     }
                 });
 
@@ -53,24 +57,43 @@ public class MainActivity extends AppCompatActivity {
         buttonLogout.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                    sessionApiClient.logout(new LogoutCallback() {
+                setLoading(true);
+
+                sessionApiClient.logout(new LogoutCallback() {
                         @Override
                         public void onSuccess() {
                             inputPassword.setText(null);
                             inputUsername.setText(null);
                             updateLoginStatus(false);
+                            setLoading(false);
                         }
 
                         @Override
                         public void onError() {
                             updateLoginStatus(true);
+                            setLoading(false);
                         }
                     });
             }
         });
+        progressBar = findViewById(R.id.progressBar);
         sharedPreferences= getSharedPreferences("login_data",MODE_PRIVATE);
         updateButtons();
+        setLoading(false);
         isLoggedIn=sharedPreferences.getBoolean(USER_LOGGED,false);
+    }
+
+    private void setLoading(boolean loading){
+        if(loading){
+            progressBar.setVisibility(View.VISIBLE);
+            buttonLogin.setClickable(false);
+            buttonLogout.setClickable(false);
+        }else {
+            progressBar.setVisibility(View.GONE);
+            buttonLogin.setClickable(true);
+            buttonLogout.setClickable(true);
+
+        }
     }
 
     private void updateLoginStatus(boolean isLogged) {
